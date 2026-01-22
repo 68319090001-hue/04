@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Room Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+body{
+  font-family: Kanit, sans-serif;
+  background:#0f172a;
+  color:white;
+  text-align:center;
+  padding:30px;
+}
+.card{
+  max-width:350px;
+  margin:auto;
+  background:#1e293b;
+  border-radius:16px;
+  padding:25px;
+}
+.big{font-size:48px;font-weight:bold;}
+button{
+  width:100%;
+  padding:15px;
+  margin-top:10px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+}
+.on{background:#22c55e;}
+.off{background:#ef4444;}
+.auto{background:#3b82f6;}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h2>Room Monitor</h2>
+
+  <div class="big" id="people">0</div>
+  <div id="status">LIGHT OFF</div>
+
+  <button class="on" onclick="lightOn()">เปิดไฟ</button>
+  <button class="off" onclick="lightOff()">ปิดไฟ</button>
+  <button class="auto" onclick="autoMode()">AUTO</button>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAY7dNXGLfeirlYUR_clmcM0NSUFJibvGM",
+  databaseURL: "https://led01-fed0f-default-rtdb.asia-southeast1.firebasedatabase.app",
+};
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+// ===== อ่านค่า realtime =====
+db.ref("room").on("value", snap => {
+  const d = snap.val();
+  if (!d) return;
+
+  document.getElementById("people").innerText = d.people ?? 0;
+
+  const s = document.getElementById("status");
+  if (d.light) {
+    s.innerText = "LIGHT ON";
+    s.style.color = "#22c55e";
+  } else {
+    s.innerText = "LIGHT OFF";
+    s.style.color = "#ef4444";
+  }
+});
+
+// ===== ปุ่มควบคุม =====
+function lightOn(){
+  db.ref("room").update({
+    manual: true,
+    command: true
+  });
+}
+
+function lightOff(){
+  db.ref("room").update({
+    manual: true,
+    command: false
+  });
+}
+
+function autoMode(){
+  db.ref("room").update({
+    manual: false
+  });
+}
+</script>
+
